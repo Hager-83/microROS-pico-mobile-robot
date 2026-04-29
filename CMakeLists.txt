@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 include(pico_sdk_import.cmake)
 #include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-project(Robot_control C CXX ASM)
+project(Robot_control C CXX ASM)  #<-------------------------
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,8 +15,8 @@ pico_sdk_init()
 link_directories(libmicroros)
 
 # Add your executable with micro-ROS example source + IMU HAL and Service sources
-add_executable(Robot_control_node
-    App/Motor_controller_test.cpp        # main micro-ROS app
+add_executable(motor_node   #<-------------------------
+    App/Robot_control.cpp                   # main micro-ROS app  #<-------------------------
     pico_uart_transport.c                # micro-ROS serial transport
 
     # MPU9250 files (HAL + Service):
@@ -34,10 +34,10 @@ add_executable(Robot_control_node
     # PID files (Service):
     Service/PID/PID.cpp
 
-) 
+)
 
 # Link libraries
-target_link_libraries(Robot_control_node
+target_link_libraries(motor_node #<-------------------------
     pico_stdlib
     microros
     hardware_i2c                   # add hardware i2c for MPU9250 communication
@@ -46,7 +46,7 @@ target_link_libraries(Robot_control_node
     hardware_timer                 # for repeating_timer in encoder_service.cpp
 )
 
-target_include_directories(Robot_control_node PUBLIC
+target_include_directories(motor_node PUBLIC #<-------------------------
     libmicroros/include
 
     # IMU
@@ -67,17 +67,18 @@ target_include_directories(Robot_control_node PUBLIC
 
 )
 
+
 # Compiler flags for size optimization (keep as is)
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
 
 # Configure Pico 
-pico_enable_stdio_usb(Robot_control_node 1)   # Enable USB stdio for serial output
-pico_enable_stdio_uart(Robot_control_node 0)  # Disable UART stdio to avoid conflict
+pico_enable_stdio_usb(motor_node 1)   # Enable USB stdio for serial output   #<-------------------------
+pico_enable_stdio_uart(motor_node 0)  # Disable UART stdio to avoid conflict #<-------------------------
 
 add_compile_definitions(PICO_UART_ENABLE_CRLF_SUPPORT=0)
 add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=0)
 add_compile_definitions(PICO_STDIO_DEFAULT_CRLF=0)
 
 # Generate UF2 output for flashing
-pico_add_extra_outputs(Robot_control_node)
+pico_add_extra_outputs(motor_node)  #<-------------------------

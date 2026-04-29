@@ -23,8 +23,8 @@ rcl_subscription_t cmd_vel_sub;
 geometry_msgs__msg__Twist cmd_vel_msg;
 
 // Motor objects (using pins from config)
-MotorHal left_motor(MOTOR_A_IN1, MOTOR_A_IN2, MOTOR_A_EN);
-MotorHal right_motor(MOTOR_B_IN1, MOTOR_B_IN2, MOTOR_B_EN);
+MotorHal left_motor(MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_EN);
+MotorHal right_motor(MOTOR_RL_IN1, MOTOR_RL_IN2, MOTOR_RL_EN);
 
 MotorService left_service(left_motor);
 MotorService right_service(right_motor);

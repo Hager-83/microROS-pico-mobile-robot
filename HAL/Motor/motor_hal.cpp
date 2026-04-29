@@ -38,11 +38,11 @@ void MotorHal::setMotorOutput(MotorState state, float duty) {
     if (duty > 1) duty = 1.0f;
 
     switch (state) {
-        case MotorState::FORWARD:    // FORWARD
+        case MotorState::FORWARD:    // FORWARD(CW)
             gpio_put(_in1, 1);
             gpio_put(_in2, 0);
             break;
-        case MotorState::BACKWARD:   // BACKWARD
+        case MotorState::BACKWARD:   // BACKWARD(CCW)
             gpio_put(_in1, 0);
             gpio_put(_in2, 1);
             break;

@@ -3,7 +3,7 @@
 /***************************************************************
  * Static Members Initialization
  ***************************************************************/
-EncoderHAL* EncoderHAL::instances[2] = {nullptr, nullptr};
+EncoderHAL* EncoderHAL::instances[4] = {nullptr, nullptr, nullptr, nullptr};
 int EncoderHAL::instanceCount = 0;
 
 /***************************************************************
@@ -15,7 +15,7 @@ EncoderHAL::EncoderHAL(uint pinA, uint pinB)
       _lastA(false), _lastB(false)
 {
     // Register this encoder instance for ISR handling
-    if (instanceCount < 2)
+    if (instanceCount < 4)
     instances[instanceCount++] = this;
 }
 
@@ -58,6 +58,7 @@ void EncoderHAL::encoder_gpioCallback(uint gpio, uint32_t events) {
     for (int i = 0; i < instanceCount; i++) {
         if (gpio == instances[i]->_pinA || gpio == instances[i]->_pinB) {
             instances[i]->handleEncoder();
+            return;
         }
     }
 }

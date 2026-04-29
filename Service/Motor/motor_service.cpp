@@ -9,16 +9,18 @@ MotorService::MotorService(MotorHal& driver)
 // Set motor speed with direction
 void MotorService::setTargetSpeed(float speed) {
     
-    if (speed > 1.0f)
+    // MAXIMUM SPEED (80%)
+    const float MAX_SPEED = 0.8f;
+    
+    if (speed > MAX_SPEED)
+    { 
+        speed = MAX_SPEED;
+    }else{}
+
+    if (speed < -MAX_SPEED) 
     {
-        speed = 1.0f;
-    }
-    else{}
-    if (speed < -1.0f)
-    {
-        speed = -1.0f;
-    } 
-    else{}
+        speed = -MAX_SPEED;
+    }else{}
 
     _current_duty = std::fabs(speed);
 

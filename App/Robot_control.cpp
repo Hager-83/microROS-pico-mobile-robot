@@ -42,24 +42,38 @@ std_msgs__msg__Float32 right_rpm_msg;
 sensor_msgs__msg__Imu imu_msg;
 
 /* Hardware */
-EncoderHAL left_encoder(ENCODER1_PIN_A, ENCODER1_PIN_B);
-EncoderHAL right_encoder(ENCODER2_PIN_A, ENCODER2_PIN_B);
 
-EncoderService left_encoder_service(left_encoder);
-EncoderService right_encoder_service(right_encoder);
+EncoderHAL front_left_encoder(ENCODER1_PIN_A, ENCODER1_PIN_B);
+EncoderHAL rear_left_encoder(ENCODER2_PIN_A, ENCODER2_PIN_B);
+EncoderHAL front_right_encoder(ENCODER3_PIN_A, ENCODER3_PIN_B);
+EncoderHAL rear_right_encoder(ENCODER4_PIN_A, ENCODER4_PIN_B);
 
-MotorHal left_motor(MOTOR_A_IN1, MOTOR_A_IN2, MOTOR_A_EN);
-MotorHal right_motor(MOTOR_B_IN1, MOTOR_B_IN2, MOTOR_B_EN);
+EncoderService front_left_encoder_service(front_left_encoder);
+EncoderService rear_left_encoder_service(rear_left_encoder);
+EncoderService front_right_encoder_service(front_right_encoder);
+EncoderService rear_right_encoder_service(rear_right_encoder);
 
-MotorService left_motor_service(left_motor);
-MotorService right_motor_service(right_motor);
+
+MotorHal front_left_motor(MOTOR_FL_IN1,  MOTOR_FL_IN2, MOTOR_FL_EN);
+MotorHal rear_left_motor(MOTOR_RL_IN1, MOTOR_RL_IN2, MOTOR_RL_EN);
+MotorHal front_right_motor(MOTOR_FR_IN1,  MOTOR_FR_IN2, MOTOR_FR_EN);
+MotorHal rear_right_motor(MOTOR_RR_IN1, MOTOR_RR_IN2, MOTOR_RR_EN);
+
+MotorService front_left_motor_service(front_left_motor);
+MotorService rear_left_motor_service(rear_left_motor);
+MotorService front_right_motor_service(front_right_motor);
+MotorService rear_right_motor_service(front_right_motor);
 
 /* PID */
-MotorPID::PIDINPUT left_pid_cfg  = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
-MotorPID::PIDINPUT right_pid_cfg = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
+MotorPID::PIDINPUT front_left_pid_cfg  = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
+MotorPID::PIDINPUT rear_left_pid_cfg   = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
+MotorPID::PIDINPUT front_right_pid_cfg = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
+MotorPID::PIDINPUT rear_right_pid_cfg  = {1.2f, 0.1f, 0.01f, CONTROL_DT, 0.0f};
 
-MotorPID left_pid(&left_pid_cfg);
-MotorPID right_pid(&right_pid_cfg);
+MotorPID front_left_pid(&front_left_pid_cfg);
+MotorPID rear_left_pid(&rear_left_pid_cfg);
+MotorPID front_right_pid(&front_right_pid_cfg);
+MotorPID rear_right_pid(&rear_right_pid_cfg);
 
 /* IMU */
 MPU9250_HAL imu_hal(i2c_default, MPU6500_DEFAULT_ADDRESS);
@@ -80,10 +94,12 @@ void cmd_vel_callback(const void * msg)
     float left_rpm  = (left_speed  / (2.0f * M_PI * WHEEL_RADIUS_CM)) * 60.0f;
     float right_rpm = (right_speed / (2.0f * M_PI * WHEEL_RADIUS_CM)) * 60.0f;
 
-    left_pid.SetSpeedRPM(fabs(left_rpm),  left_rpm  >= 0);
-    right_pid.SetSpeedRPM(fabs(right_rpm), right_rpm >= 0);
+    front_left_pid.SetSpeedRPM(fabs(left_rpm),   left_rpm  >= 0);
+    rear_left_pid.SetSpeedRPM(fabs(left_rpm),    left_rpm  >= 0);
+    front_right_pid.SetSpeedRPM(fabs(right_rpm), right_rpm >= 0);
+    rear_right_pid.SetSpeedRPM(fabs(right_rpm),  right_rpm >= 0);
 
-    printf("CMD_VEL target RPM updated. \n");
+    //printf("CMD_VEL target RPM updated. \n");
 }
 
 /* Control loop (100 Hz) */
@@ -91,20 +107,31 @@ void control_timer_callback(rcl_timer_t * timer, int64_t)
 {
     if (!timer) return;
 
-    float left_rpm  = left_encoder_service.encoder_getRPM();
-    float right_rpm = right_encoder_service.encoder_getRPM();
+     /* Read RPM from each encoder independently */
+    float front_left_rpm  = front_left_encoder_service.encoder_getRPM();
+    float rear_left_rpm   = rear_left_encoder_service.encoder_getRPM();
+    float front_right_rpm = front_right_encoder_service.encoder_getRPM();
+    float rear_right_rpm  = rear_right_encoder_service.encoder_getRPM();
 
-    float left_throttle  = left_pid.UpdateThrottle(left_rpm);
-    float right_throttle = right_pid.UpdateThrottle(right_rpm);
+    /* Each PID computes its own correction */
+    float front_left_throttle  = front_left_pid.UpdateThrottle(front_left_rpm);
+    float rear_left_throttle   = rear_left_pid.UpdateThrottle(rear_left_rpm);
+    float front_right_throttle = front_right_pid.UpdateThrottle(front_right_rpm);
+    float rear_right_throttle  = rear_right_pid.UpdateThrottle(rear_right_rpm);
 
-    left_motor_service.setTargetSpeed(left_throttle);
-    right_motor_service.setTargetSpeed(right_throttle);
+    /* Apply throttle to each motor independently */
+    front_left_motor_service.setTargetSpeed(front_left_throttle);
+    rear_left_motor_service.setTargetSpeed(rear_left_throttle);
+    front_right_motor_service.setTargetSpeed(front_right_throttle);
+    rear_right_motor_service.setTargetSpeed(rear_right_throttle);
 
-    left_rpm_msg.data  = left_rpm;
-    right_rpm_msg.data = right_rpm;
+    /* Publish average RPM per side as feedback */
+    left_rpm_msg.data  = (front_left_rpm  + rear_left_rpm) / 2.0f ;
+    right_rpm_msg.data = (front_right_rpm + rear_right_rpm) / 2.0f;
 
     rcl_ret_t ret1 = rcl_publish(&left_rpm_pub, &left_rpm_msg, NULL);
     rcl_ret_t ret2 = rcl_publish(&right_rpm_pub, &right_rpm_msg, NULL);
+
     if ((ret1 || ret2) != RCL_RET_OK) 
     {
         printf("Failed to publish Wheel RPM message\n");
@@ -148,10 +175,16 @@ int main()
     );
 
     /* Init hardware */
-    left_encoder.encoder_init();
-    right_encoder.encoder_init();
-    left_encoder_service.encoder_start();
-    right_encoder_service.encoder_start();
+    front_left_encoder.encoder_init();
+    rear_left_encoder.encoder_init();
+    front_right_encoder.encoder_init();
+    rear_right_encoder.encoder_init();
+
+
+    front_left_encoder_service.encoder_start();
+    rear_left_encoder_service.encoder_start();
+    front_right_encoder_service.encoder_start();
+    rear_right_encoder_service.encoder_start();
 
     while (!imu_hal.begin(PICO_DEFAULT_I2C_SDA_PIN,PICO_DEFAULT_I2C_SCL_PIN, 400000)) 
     {
@@ -223,6 +256,8 @@ int main()
     );
     // -------------------- Timer setup --------------------
 
+
+    /* ── Executor: 1 sub + 2 timers = 3 handles ─────────────────── */
     rclc_executor_init(&executor, &support.context, 3, &allocator);
     rclc_executor_add_subscription( &executor, &cmd_vel_sub, &cmd_vel_msg,&cmd_vel_callback, ON_NEW_DATA);
     rclc_executor_add_timer(&executor, &control_timer);

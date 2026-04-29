@@ -42,15 +42,18 @@ std_msgs__msg__Float32 right_rpm_msg;
 std_msgs__msg__Float32 left_pwm_msg;
 std_msgs__msg__Float32 right_pwm_msg;
 
+
+
 // Hardware 
 EncoderHAL left_encoder(ENCODER1_PIN_A, ENCODER1_PIN_B);
 EncoderHAL right_encoder(ENCODER2_PIN_A, ENCODER2_PIN_B);
 
+
 EncoderService left_encoder_service(left_encoder);
 EncoderService right_encoder_service(right_encoder);
 
-MotorHal left_motor(MOTOR_A_IN1, MOTOR_A_IN2, MOTOR_A_EN);
-MotorHal right_motor(MOTOR_B_IN1, MOTOR_B_IN2, MOTOR_B_EN);
+MotorHal left_motor(MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_EN);
+MotorHal right_motor(MOTOR_RL_IN1, MOTOR_RL_IN2, MOTOR_RL_EN);
 
 MotorService left_motor_service(left_motor);
 MotorService right_motor_service(right_motor);

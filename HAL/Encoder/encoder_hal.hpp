@@ -83,7 +83,7 @@ private:
     volatile bool _lastA, _lastB;           // Previous pin states
 
     // -------- Static instance registry --------
-    static EncoderHAL* instances[2];        // List of encoder instances
+    static EncoderHAL* instances[4];        // List of encoder instances
     static int instanceCount;               // Number of registered encoders
 };
 

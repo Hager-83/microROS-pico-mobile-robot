@@ -1,20 +1,31 @@
 #ifndef ENCODER_CONFIG_HPP
 #define ENCODER_CONFIG_HPP
 
-/***************************************************************
- * Encoder GPIO Pin Assignments
- * Description:
- *     - Define GPIO pins for each quadrature encoder.
- *     - Supports multiple encoders (Encoder 1, Encoder 2).
- ****************************************************************/
+/* ================================================================
+ * Encoder GPIO Pin Assignments — 4 motors with encoders
+ *
+ * Layout:
+ *   ENCODER1 → Motor FL (front-left)
+ *   ENCODER2 → Motor RL (rear-left)
+ *   ENCODER3 → Motor FR (front-right)
+ *   ENCODER4 → Motor RR (rear-right)
+ * ================================================================ */
 
-// 1st encoder pins
-#define ENCODER1_PIN_A 0
-#define ENCODER1_PIN_B 1
+/* ── Encoder 1 — Motor FL (front-left) ───────────────────────── */
+#define ENCODER1_PIN_A 18
+#define ENCODER1_PIN_B 19
 
-// 2nd encoder pins
-#define ENCODER2_PIN_A 12
-#define ENCODER2_PIN_B 13
+/* ── Encoder 2 — Motor RL (rear-left) ────────────────────────── */
+#define ENCODER2_PIN_A 20
+#define ENCODER2_PIN_B 21
+
+/* ── Encoder 3 — Motor FR (front-right) ──────────────────────── */
+#define ENCODER3_PIN_A   22
+#define ENCODER3_PIN_B   26
+
+/* ── Encoder 4 — Motor RR (rear-right) ───────────────────────── */
+#define ENCODER4_PIN_A   27
+#define ENCODER4_PIN_B   28
 
 /***************************************************************
  * Encoder Parameters
@@ -24,6 +35,6 @@
 #define ENCODER_CPR 330
 
 // Radius of the wheel in centimeters
-#define WHEEL_RADIUS_CM 3.0f
+#define WHEEL_RADIUS_CM 3.5f
 
 #endif // ENCODER_CONFIG_HPP
