@@ -15,7 +15,7 @@ pico_sdk_init()
 link_directories(libmicroros)
 
 # Add your executable with micro-ROS example source + IMU HAL and Service sources
-add_executable(motor_node   #<-------------------------
+add_executable(robot_control_node   #<-------------------------
     App/Robot_control.cpp                   # main micro-ROS app  #<-------------------------
     pico_uart_transport.c                # micro-ROS serial transport
 
@@ -37,7 +37,7 @@ add_executable(motor_node   #<-------------------------
 )
 
 # Link libraries
-target_link_libraries(motor_node #<-------------------------
+target_link_libraries(robot_control_node #<-------------------------
     pico_stdlib
     microros
     hardware_i2c                   # add hardware i2c for MPU9250 communication
@@ -46,7 +46,7 @@ target_link_libraries(motor_node #<-------------------------
     hardware_timer                 # for repeating_timer in encoder_service.cpp
 )
 
-target_include_directories(motor_node PUBLIC #<-------------------------
+target_include_directories(robot_control_node PUBLIC #<-------------------------
     libmicroros/include
 
     # IMU
@@ -73,12 +73,12 @@ SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
 
 # Configure Pico 
-pico_enable_stdio_usb(motor_node 1)   # Enable USB stdio for serial output   #<-------------------------
-pico_enable_stdio_uart(motor_node 0)  # Disable UART stdio to avoid conflict #<-------------------------
+pico_enable_stdio_usb(robot_control_node 1)   # Enable USB stdio for serial output   #<-------------------------
+pico_enable_stdio_uart(robot_control_node 0)  # Disable UART stdio to avoid conflict #<-------------------------
 
 add_compile_definitions(PICO_UART_ENABLE_CRLF_SUPPORT=0)
 add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=0)
 add_compile_definitions(PICO_STDIO_DEFAULT_CRLF=0)
 
 # Generate UF2 output for flashing
-pico_add_extra_outputs(motor_node)  #<-------------------------
+pico_add_extra_outputs(robot_control_node)  #<-------------------------
