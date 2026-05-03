@@ -32,7 +32,7 @@
  ***************************************************************/
 
 // Encoder counts per revolution (CPR)
-#define ENCODER_CPR 330
+#define ENCODER_CPR 374
 
 // Radius of the wheel in centimeters
 #define WHEEL_RADIUS_CM 3.5f

@@ -26,7 +26,7 @@
 
 /* Robot parameters */
 #define WHEEL_RADIUS_CM   3.5f
-#define WHEEL_BASE_CM     25.0f
+#define WHEEL_BASE_CM     25.0f // <----
 #define CONTROL_DT        0.01f   // 100 Hz
 
 /* micro-ROS objects */
@@ -139,7 +139,7 @@ void control_timer_callback(rcl_timer_t * timer, int64_t)
 }
 
 /* IMU timer (50 Hz) */
-void imu_timer_callback(rcl_timer_t *, int64_t)
+void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time)
 {
     IMUData data = imu_service.getAll();
 
@@ -185,6 +185,13 @@ int main()
     rear_left_encoder_service.encoder_start();
     front_right_encoder_service.encoder_start();
     rear_right_encoder_service.encoder_start();
+
+    front_left_encoder.encoder_init();
+    rear_left_encoder.encoder_init();
+    front_right_encoder.encoder_init();
+    rear_right_encoder.encoder_init();
+
+
 
     while (!imu_hal.begin(PICO_DEFAULT_I2C_SDA_PIN,PICO_DEFAULT_I2C_SCL_PIN, 400000)) 
     {

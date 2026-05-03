@@ -38,14 +38,14 @@ void EncoderHAL::encoder_init() {
     // Enable interrupts on both edges
     gpio_set_irq_enabled_with_callback(
         _pinA,
-        GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
+        GPIO_IRQ_EDGE_RISE,
         true,
         &EncoderHAL::encoder_gpioCallback
     );
 
     gpio_set_irq_enabled(
         _pinB,
-        GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
+        GPIO_IRQ_EDGE_RISE,
         true
     );
 }
