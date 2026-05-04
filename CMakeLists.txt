@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 include(pico_sdk_import.cmake)
 #include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-project(Motor_test C CXX ASM)  #<-------------------------
+project(main C CXX ASM)  #<-------------------------
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,8 +15,9 @@ pico_sdk_init()
 link_directories(libmicroros)
 
 # Add your executable with micro-ROS example source + IMU HAL and Service sources
-add_executable(robot_control_node   #<-------------------------
-    App/Motor_test.cpp                   # main micro-ROS app  #<-------------------------
+add_executable(robot_control_node        #<-------------------------
+    App/main.cpp                         # main micro-ROS app  #<-------------------------
+    App/Robot_control.cpp
     pico_uart_transport.c                # micro-ROS serial transport
 
     # MPU9250 files (HAL + Service):
