@@ -11,6 +11,7 @@
 #include <geometry_msgs/msg/twist.h>
 #include "sensor_msgs/msg/imu.h"
 #include <std_msgs/msg/float32.h>
+#include <std_msgs/msg/float32_multi_array.h>
 
 /* Pico */
 #include "pico/stdlib.h"
@@ -44,6 +45,9 @@ rcl_publisher_t right_speed_pub;
 rcl_publisher_t left_rpm_pub;
 rcl_publisher_t right_rpm_pub;
 
+rcl_publisher_t encoder_pos_pub;
+std_msgs__msg__Float32MultiArray encoder_pos_msg;
+
 
 /* Messages */
 sensor_msgs__msg__Imu imu_msg;
@@ -60,7 +64,6 @@ MPU9250_HAL imu_hal(i2c_default, MPU6500_DEFAULT_ADDRESS);
 IMUService  imu_service(imu_hal);
 
 // Encoder objects
-
 EncoderHAL enc_FL(ENCODER1_PIN_A, ENCODER1_PIN_B);   // front-left
 EncoderHAL enc_RL(ENCODER2_PIN_A, ENCODER2_PIN_B);   // rear-left
 EncoderHAL enc_FR(ENCODER3_PIN_A, ENCODER3_PIN_B);   // front-right
@@ -73,8 +76,7 @@ EncoderService svc_enc_FR(enc_FR);
 EncoderService svc_enc_RR(enc_RR);
 
 
-// Motor objects (using pins from config)
-
+// Motor objects 
 MotorHal motor_FL(MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_EN);
 MotorHal motor_RL(MOTOR_RL_IN1, MOTOR_RL_IN2, MOTOR_RL_EN);
 MotorHal motor_FR(MOTOR_FR_IN1, MOTOR_FR_IN2, MOTOR_FR_EN);
@@ -136,18 +138,24 @@ void control_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
     else{}
 
     // Read current values from encoder services
+
+    // speeds
     float speed_FL      = svc_enc_FL.encoderGetSpeedCmS();
     float speed_RL      = svc_enc_RL.encoderGetSpeedCmS();
-
     float speed_FR      = svc_enc_FR.encoderGetSpeedCmS();
     float speed_RR      = svc_enc_RR.encoderGetSpeedCmS();
 
+    // rpm
     float rpm_FL        = svc_enc_FL.encoderGetRPM();
     float rpm_RL        = svc_enc_RL.encoderGetRPM();
-
     float rpm_FR        = svc_enc_FR.encoderGetRPM();
     float rpm_RR        = svc_enc_RR.encoderGetRPM();
     
+    // positions 
+    float pos_FL = svc_enc_FL.encoderGetPositionRad();
+    float pos_RL = svc_enc_RL.encoderGetPositionRad();
+    float pos_FR = svc_enc_FR.encoderGetPositionRad();
+    float pos_RR = svc_enc_RR.encoderGetPositionRad();
 
     // Fill messages
     left_speed_msg.data  = (speed_FL + speed_RL) / 2.0f;
@@ -155,6 +163,14 @@ void control_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 
     left_rpm_msg.data    = (rpm_FL + rpm_RL) / 2.0f;
     right_rpm_msg.data   = (rpm_FR + rpm_RR) / 2.0f;
+
+    // encoder array
+    encoder_pos_msg.data.data[0] = pos_FL;
+    encoder_pos_msg.data.data[1] = pos_RL;
+    encoder_pos_msg.data.data[2] = pos_FR;
+    encoder_pos_msg.data.data[3] = pos_RR;
+
+    encoder_pos_msg.data.size = 4;
 
     // Publish all
     rcl_ret_t ret;
@@ -182,6 +198,7 @@ void control_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
     {
         printf("Failed to publish right RPM.\n");
     }
+    ret =  rcl_publish(&encoder_pos_pub, &encoder_pos_msg, NULL);
 
 }
 
@@ -271,6 +288,7 @@ void RobotSystem::init_ros()
     rclc_support_init(&support, 0, NULL, &allocator);
     rclc_node_init_default(&node, "robot_control_node", "", &support);
 
+
     // Subscriber
     rclc_subscription_init_default(
         &cmd_vel_sub,
@@ -294,6 +312,15 @@ void RobotSystem::init_ros()
 
     rclc_publisher_init_default(&right_rpm_pub, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32), "right_wheel_rpm");
+
+    rclc_publisher_init_default( &encoder_pos_pub, &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32MultiArray), "encoder_positions");
+
+    std_msgs__msg__Float32MultiArray__init(&encoder_pos_msg);
+
+    encoder_pos_msg.data.capacity = 4;
+    encoder_pos_msg.data.size = 4;
+    encoder_pos_msg.data.data = (float*) malloc(4 * sizeof(float));
 
     // Timers
     rclc_timer_init_default(&control_timer, &support,

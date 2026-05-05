@@ -68,6 +68,16 @@ public:
      ***********************************************************/
     float encoderGetRotations() const;
 
+
+    /***********************************************************
+     * Method: encoderGetPositionRad
+     * Description:
+     *     - Returns the current wheel angular position in radians
+     *       computed from encoder ticks.
+     *     - Const method; does not modify internal state.
+     ***********************************************************/
+    float encoderGetPositionRad() const;
+
 private:
     /***********************************************************
      * Static Timer Callback: timerCallback

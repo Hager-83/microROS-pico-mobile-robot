@@ -98,6 +98,6 @@ void EncoderService::update() {
 float EncoderService::encoderGetRPM() const { return _rpm; }
 float EncoderService::encoderGetSpeedCmS() const { return _speedCmS; }
 float EncoderService::encoderGetDistanceCm() const { return _distanceCm; }
-
 // Returns total number of rotations calculated from ticks
 float EncoderService::encoderGetRotations() const { return _currentTicks / static_cast<float>(ENCODER_CPR); }
+float EncoderService::encoderGetPositionRad() const { return (_currentTicks / static_cast<float>(ENCODER_CPR)) * 2.0f * M_PI; }
