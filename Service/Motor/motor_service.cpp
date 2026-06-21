@@ -17,6 +17,7 @@ void MotorService::setTargetSpeed(float speed) {
     
     // MAXIMUM SPEED (80%)
     const float MAX_SPEED = 0.8f;
+    const float MIN_START = 0.65f;
     
     // Clamp speed to safe limits
     if (speed > MAX_SPEED)
@@ -28,6 +29,12 @@ void MotorService::setTargetSpeed(float speed) {
     {
         speed = -MAX_SPEED;
     }else{}
+
+    // DEADZONE / START BOOST
+    if (speed != 0.0f && std::fabs(speed) < MIN_START)
+    {
+        speed = (speed > 0) ? MIN_START : -MIN_START;
+    }
 
     // Store absolute duty cycle
     _current_duty = std::fabs(speed);
